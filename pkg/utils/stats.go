@@ -92,7 +92,8 @@ func GetTop20ProcessesByCpuAndMem() (models.ProcessStats,error) {
 		return a > b
 	})
 
-	top5ProcessesByCpu := processes[:20]
+	top5ProcessesByCpu := make([]*process.Process, 20)
+	copy(top5ProcessesByCpu, processes[:20])
 
 	sort.Slice(processes, func(i, j int) bool {
 		a, _ := processes[i].MemoryPercent()
