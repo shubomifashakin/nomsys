@@ -10,9 +10,10 @@ go run ./cmd/cli/main.go
 
 ### Flags
 
-| Flag | Default | Description                      |
-| ---- | ------- | -------------------------------- |
-| `-d` | `2`     | Delay between updates in seconds |
+| Flag | Default | Description                                    |
+| ---- | ------- | ---------------------------------------------- |
+| `-d` | `2`     | Delay between updates in seconds               |
+| `-n` | `0`     | Exit after N iterations (0 = run indefinitely) |
 
 ## Keybindings
 

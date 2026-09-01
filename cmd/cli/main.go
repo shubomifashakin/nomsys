@@ -26,6 +26,7 @@ func main() {
 	}
 	
 	delay:=flag.Int("d",2, "Set the delay between updates(in seconds)")
+	totalIterations:=flag.Int("n",0,"Exit sysmon after NUMBER iterations/frame updates")
 	flag.Parse()
 
 	ctx,cancel:=context.WithCancel(context.Background())
@@ -55,15 +56,18 @@ func main() {
 	})
 	
 	var wg sync.WaitGroup
-	
+	iterations:=0
+
 	wg.Go(func(){
 		for  {
 			select{
 				case <- ctx.Done():
 					return
 				case <- ticker.C:
-					memChan:=make(chan models.MemStats)
-					memErrChan:=make(chan error)
+				iterations++
+
+				memChan:=make(chan models.MemStats)
+				memErrChan:=make(chan error)
 		
 				go func(){
 					memStats,err:=utils.GetMemStats()
@@ -190,6 +194,13 @@ func main() {
 						})
 					}
 				})
+			}
+
+			if *totalIterations > 0 && iterations >= *totalIterations {
+				app.Stop()
+				cancel()
+				ticker.Stop()
+				return
 			}
 			}
 		}
