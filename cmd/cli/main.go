@@ -347,7 +347,9 @@ func createRoot() (*tview.Flex,models.Tables){
 
 	topRow := tview.NewFlex().SetDirection(tview.FlexColumn).
 	AddItem(uptimeTable, 0, 1, false).
-		AddItem(memTable, 0, 1, false).
+		AddItem(memTable, 0, 1, false)
+
+	middleRow := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(cpuTable, 0, 2, false).
 		AddItem(networkTable, 0, 1, false)
 
@@ -359,6 +361,7 @@ func createRoot() (*tview.Flex,models.Tables){
 
 	root := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(topRow, 10, 0, false).
+		AddItem(middleRow, 10, 0, false).
 		AddItem(bottomRow, 0, 1, true)
 
 	return root, models.Tables{
