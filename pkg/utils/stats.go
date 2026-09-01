@@ -2,7 +2,6 @@ package utils
 
 import (
 	"sort"
-	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/host"
@@ -34,7 +33,7 @@ func GetMemStats() (models.MemStats,error) {
 func GetCpuStats() (models.CpuStats,error){
 	// this would take two samples, one at the beginning and one after 500 milliseconds
 	// after which it would then calculate the percentage of increase
-	percentUsed, err := cpu.Percent(500*time.Millisecond, true)
+	percentUsed, err := cpu.Percent(0, true)
 
 	if err != nil {
 		return models.CpuStats{},err

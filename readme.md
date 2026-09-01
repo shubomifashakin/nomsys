@@ -21,6 +21,7 @@ go run ./cmd/cli/main.go
 | -------- | ----------------------------------- |
 | `Tab`    | Switch focus between process tables |
 | `↑ / ↓`  | Scroll through process list         |
+| `q`      | Quit                                |
 | `Ctrl+C` | Quit                                |
 
 ## Stats

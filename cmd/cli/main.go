@@ -39,6 +39,10 @@ func main() {
 	ticker:=time.NewTicker(time.Duration(*delay) * time.Second)
 
 	app=app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Rune() == 'q' {
+			app.Stop()
+			return nil
+		}
 		switch event.Key() {
 		case tcell.KeyCtrlC:
 			app.Stop()
