@@ -12,21 +12,21 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/shirou/gopsutil/v4/process"
-	"github.com/shubomifashakin/sysmon/internal/models"
-	"github.com/shubomifashakin/sysmon/pkg/utils"
+	"github.com/shubomifashakin/nomsys/internal/models"
+	"github.com/shubomifashakin/nomsys/pkg/utils"
 )
 
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "sysmon - A terminal based system resource monitor\n\n")
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: sysmon [flags]\n\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "nomsys - A terminal based system resource monitor\n\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: nomsys [flags]\n\n")
 		fmt.Fprintf(flag.CommandLine.Output(), "Flags:\n")
 		flag.PrintDefaults()
 	}
 	
 	delay:=flag.Int("d",2, "Set the delay between updates(in seconds)")
-	totalIterations:=flag.Int("n",0,"Exit sysmon after NUMBER iterations/frame updates")
+	totalIterations:=flag.Int("n",0,"Exit nomsys after NUMBER iterations/frame updates")
 	flag.Parse()
 
 	ctx,cancel:=context.WithCancel(context.Background())

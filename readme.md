@@ -1,4 +1,4 @@
-# Sysmon
+# Nomsys
 
 A terminal system resource monitor built with Go. Displays live CPU, memory, network, and uptime stats alongside the top 20 processes by CPU and memory usage. Inspired by htop
 

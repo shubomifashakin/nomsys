@@ -1,4 +1,4 @@
-module github.com/shubomifashakin/sysmon
+module github.com/shubomifashakin/nomsys
 
 go 1.26.2
 

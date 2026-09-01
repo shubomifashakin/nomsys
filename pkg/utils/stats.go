@@ -8,7 +8,7 @@ import (
 	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/shirou/gopsutil/v4/net"
 	"github.com/shirou/gopsutil/v4/process"
-	"github.com/shubomifashakin/sysmon/internal/models"
+	"github.com/shubomifashakin/nomsys/internal/models"
 )
 
 func GetMemStats() (models.MemStats,error) {
