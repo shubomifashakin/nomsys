@@ -89,7 +89,7 @@ func populateProcessTable(t *tview.Table, processes []*process.Process, metricLa
 	r, c := t.GetSelection()
 
 	t.Clear()
-	t.SetCell(0, 0, header("Name"))
+	t.SetCell(0, 0, header("Command"))
 	t.SetCell(0, 1, header("PID"))
 	t.SetCell(0, 2, header("User"))
 	t.SetCell(0, 3, header(metricLabel))
@@ -97,7 +97,13 @@ func populateProcessTable(t *tview.Table, processes []*process.Process, metricLa
 	t.SetCell(0, 5, header("Status"))
 
 	for i, p := range processes {
-		name, _ := p.Name()
+		name, _ := p.Cmdline()
+		if name == "" {
+			name, _ = p.Name()
+		}
+		if len(name) > 25 {
+			name = name[:25] + "..."
+		}
 		status, _ := p.Status()
 		user, _ := p.Username()
 		createdTime, _ := p.CreateTime()
