@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"strings"
 	"sync"
 	"time"
 
@@ -175,24 +174,24 @@ func main() {
 			if ctx.Err() == nil {
 				app.QueueUpdateDraw(func(){
 					if memErr == nil {
-						updateMemTable(tables.MemTable, memRes)
+						tables.UpdateMemTable(memRes)
 					}
 					if cpuErr == nil {
-						updateCpuTable(tables.CpuTable, cpuRes)
+						tables.UpdateCpuTable(cpuRes)
 					}
 					if uptimeErr == nil {
-						updateUptimeTable(tables.UptimeTable, uptimeRes)
+						tables.UpdateUptimeTable(uptimeRes)
 					}
 					if networkErr == nil {
-						updateNetworkTable(tables.NetworkTable, networkRes)
+						tables.UpdateNetworkTable(networkRes)
 					}
 					if processErr == nil {
-						updateProcessTable(tables.TopMemTable, processRes.Top5ProcessesByMem, "% Mem", func(p *process.Process) string {
+						tables.UpdateTopProcessByMemTable(processRes.Top5ProcessesByMem, "% Mem", func(p *process.Process) string {
 							pct, _ := p.MemoryPercent()
 							return fmt.Sprintf("%.2f%%", pct)
 						})
 
-						updateProcessTable(tables.TopCpuTable, processRes.Top5ProcessesByCpu, "% CPU", func(p *process.Process) string {
+						tables.UpdateTopProcessByCpuTable(processRes.Top5ProcessesByCpu, "% CPU", func(p *process.Process) string {
 							pct, _ := p.CPUPercent()
 							return fmt.Sprintf("%.2f%%", pct)
 						})
@@ -221,146 +220,33 @@ func main() {
 }
 
 
-func header(text string) *tview.TableCell {
-	return tview.NewTableCell(text).
-		SetTextColor(tcell.ColorHotPink).
-		SetAlign(tview.AlignCenter).
-		SetSelectable(false).
-		SetExpansion(1).
-		SetAttributes(tcell.AttrBold)
-}
+func createRoot() (*tview.Flex, *models.Tables){
+	tables:=models.NewTables()
 
-func cell(text string) *tview.TableCell {
-	return tview.NewTableCell(text).
-		SetAlign(tview.AlignCenter).
-		SetExpansion(1)
-}
-
-func updateMemTable(t *tview.Table, s models.MemStats) {
-	t.Clear()
-	t.SetCell(0, 0, header("Used (MB)"))
-	t.SetCell(0, 1, header("Free (MB)"))
-	t.SetCell(0, 2, header("Total (MB)"))
-	t.SetCell(0, 3, header("% Used"))
-	t.SetCell(1, 0, cell(fmt.Sprintf("%d", s.UseRamMb)))
-	t.SetCell(1, 1, cell(fmt.Sprintf("%d", s.AvailableRamMb)))
-	t.SetCell(1, 2, cell(fmt.Sprintf("%d", s.TotalRamMb)))
-	t.SetCell(1, 3, cell(fmt.Sprintf("%.1f%%", s.PercentUsed)))
-}
-
-func updateCpuTable(t *tview.Table, s models.CpuStats) {
-	t.Clear()
-	for col, pct := range s.PercentUsed {
-		t.SetCell(0, col, header(fmt.Sprintf("Core %d", col)))
-		t.SetCell(1, col, cell(fmt.Sprintf("%.1f%%", pct)))
-	}
-}
-
-func updateUptimeTable(t *tview.Table, s models.UptimeStats) {
-	t.Clear()
-	t.SetCell(0, 0, header("Days"))
-	t.SetCell(0, 1, header("Hours"))
-	t.SetCell(0, 2, header("Minutes"))
-	t.SetCell(1, 0, cell(fmt.Sprintf("%d", s.Days)))
-	t.SetCell(1, 1, cell(fmt.Sprintf("%d", s.Hours)))
-	t.SetCell(1, 2, cell(fmt.Sprintf("%d", s.Minutes)))
-}
-
-func updateNetworkTable(t *tview.Table, s models.NetworkStats) {
-	t.Clear()
-	t.SetCell(0, 0, header("Sent (MB)"))
-	t.SetCell(0, 1, header("Recv (MB)"))
-	t.SetCell(0, 2, header("TCP Conns"))
-	if len(s.Stats) > 0 {
-		stat := s.Stats[0]
-		t.SetCell(1, 0, cell(fmt.Sprintf("%d", stat.BytesSent>>20)))
-		t.SetCell(1, 1, cell(fmt.Sprintf("%d", stat.BytesRecv>>20)))
-		t.SetCell(1, 2, cell(fmt.Sprintf("%d", len(s.TotalTcpConnections))))
-	}
-}
-
-func updateProcessTable(t *tview.Table, processes []*process.Process, metricLabel string, getMetric func(*process.Process) string) {
-	r,c:=t.GetSelection()
-
-	t.Clear()
-	t.SetCell(0, 0, header("Name"))
-	t.SetCell(0, 1, header("PID"))
-	t.SetCell(0, 2, header("User"))
-	t.SetCell(0, 3, header(metricLabel))
-	t.SetCell(0, 4, header("Time"))
-	t.SetCell(0,5,header("Status"))
-
-	for i, p := range processes {
-		name, _ := p.Name()
-		status,_:=p.Status()
-		user, _ := p.Username()
-		createdTime, _ := p.CreateTime()
-		
-		if len(status)>0{
-			for i,v:=range status{
-				trimmed:=strings.TrimSpace(v)
-				if trimmed == ""{
-					continue
-				}
-				status[i] = strings.ToUpper(string(trimmed[0]))
-			}
-		}
-
-		t.SetCell(i+1, 0, cell(name))
-		t.SetCell(i+1, 1, cell(fmt.Sprintf("%d", p.Pid)))
-		t.SetCell(i+1, 2, cell(user))
-		t.SetCell(i+1, 3, cell(getMetric(p)))
-		t.SetCell(i+1, 4, cell(utils.ConvertMsToTime(createdTime)))
-		t.SetCell(i+1, 5, cell(strings.Join(status,",")))
-	}
-
-	t.Select(r,c)
-}
-
-func createTable(title string,rowSelectable bool) *tview.Table {
-	t := tview.NewTable().SetBorders(true)
-	t.SetBorder(true).SetTitle(" " + title + " ").SetTitleAlign(tview.AlignCenter).SetTitleColor(tcell.ColorYellow).SetBackgroundColor(tcell.NewRGBColor(20, 22, 30))
-	t.SetSelectable(rowSelectable,false)
-	t.SetSelectedStyle(tcell.Style{}.Background(tcell.ColorDeepPink).Foreground(tcell.ColorYellow).Bold(true))
-	
-	// headers should always be at the top
-	t.SetFixed(1,0)
-	return t
-}
-
-func createRoot() (*tview.Flex,models.Tables){
-	memTable    := createTable("Memory",false)
-	cpuTable    := createTable("CPU",false)
-	networkTable := createTable("Network",false)
-	uptimeTable := createTable("Uptime",false)
-	topMemTable := createTable("Top 20 by Memory",true)
-	topCpuTable := createTable("Top 20 by CPU",true)
-
-	topCpuTable.SetFocusFunc(func() {
-		topCpuTable.SetBorderColor(tcell.ColorYellow)
+	tables.TopCpuTable.SetFocusFunc(func() {
+		tables.TopCpuTable.SetBorderColor(tcell.ColorYellow)
 	}).SetBlurFunc(func() {
-		topCpuTable.SetBorderColor(tcell.ColorWhite)
+		tables.TopCpuTable.SetBorderColor(tcell.ColorWhite)
 	})
 	
-	topMemTable.SetFocusFunc(func() {
-		topMemTable.SetBorderColor(tcell.ColorYellow)
+	tables.TopMemTable.SetFocusFunc(func() {
+		tables.TopMemTable.SetBorderColor(tcell.ColorYellow)
 	}).SetBlurFunc(func() {
-		topMemTable.SetBorderColor(tcell.ColorWhite)
+		tables.TopMemTable.SetBorderColor(tcell.ColorWhite)
 	})
-	
 
 	topRow := tview.NewFlex().SetDirection(tview.FlexColumn).
-	AddItem(uptimeTable, 0, 1, false).
-		AddItem(memTable, 0, 1, false)
+	AddItem(tables.UptimeTable, 0, 1, false).
+		AddItem(tables.MemTable, 0, 1, false)
 
 	middleRow := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(cpuTable, 0, 2, false).
-		AddItem(networkTable, 0, 1, false)
+		AddItem(tables.CpuTable, 0, 2, false).
+		AddItem(tables.NetworkTable, 0, 1, false)
 
 	// focus should be given to the cpu table when the bottom row is in focus
 	bottomRow := tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(topMemTable, 0, 1, false).
-		AddItem(topCpuTable, 0, 1, true)
+		AddItem(tables.TopMemTable, 0, 1, false).
+		AddItem(tables.TopCpuTable, 0, 1, true)
 
 
 	root := tview.NewFlex().SetDirection(tview.FlexRow).
@@ -368,12 +254,5 @@ func createRoot() (*tview.Flex,models.Tables){
 		AddItem(middleRow, 10, 0, false).
 		AddItem(bottomRow, 0, 1, true)
 
-	return root, models.Tables{
-		MemTable:     memTable,
-		CpuTable:     cpuTable,
-		NetworkTable: networkTable,
-		UptimeTable:  uptimeTable,
-		TopMemTable:  topMemTable,
-		TopCpuTable:  topCpuTable,
-	}
+	return root, tables
 }
