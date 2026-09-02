@@ -2,6 +2,17 @@
 
 A terminal system resource monitor built with Go. Displays live CPU, memory, network, and uptime stats alongside the top 20 processes by CPU and memory usage. Inspired by htop
 
+![nomsys screenshot](assets/screenshot.png)
+
+## Installation
+
+Download the archive for your platform from the [releases page](https://github.com/shubomifashakin/nomsys/releases).
+
+```bash
+# Linux / macOS
+sudo mv nomsys /usr/local/bin/nomsys
+```
+
 ## Running
 
 ```bash
@@ -30,5 +41,5 @@ go run ./cmd/cli/main.go
 - **CPU** — per-core usage %
 - **Network** — total bytes sent/received, active TCP connections
 - **Uptime** — days, hours, minutes
-- **Top 20 by CPU** — name, PID, user, CPU %, start time, status
-- **Top 20 by Memory** — name, PID, user, memory %, start time, status
+- **Top 20 by CPU** — command, PID, user, CPU %, start time, status
+- **Top 20 by Memory** — command, PID, user, memory %, start time, status
